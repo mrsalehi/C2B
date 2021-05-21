@@ -2,10 +2,10 @@
 ## Super Resolution
 | Reference Papers | Read |
 |---|---|
-| [**Single Image Super-resolution from Transformed Self-Exemplars (CVPR 2015)**](https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Huang_Single_Image_Super-Resolution_2015_CVPR_paper.pdf) | ❌
-| [**Accurate Image Super-Resolution Using Very Deep Convolutional Networks (CVPR 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ❌
-| [**Accelerating the Super-Resolution Convolutional Neural Network (ECCV 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ❌
-| [**Enhanced Deep Residual Networks for Single Image Super-Resolution (CVPR 2017 workshop)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ❌
+| [**Single Image Super-resolution from Transformed Self-Exemplars (CVPR 2015)**](https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Huang_Single_Image_Super-Resolution_2015_CVPR_paper.pdf) | ✅
+| [**Accurate Image Super-Resolution Using Very Deep Convolutional Networks (CVPR 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ✅
+| [**Accelerating the Super-Resolution Convolutional Neural Network (ECCV 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ✅
+| [**Enhanced Deep Residual Networks for Single Image Super-Resolution (CVPR 2017 workshop)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ✅
 | [**Deep Laplacian Pyramid Networks for Fast and Accurate Super-Resolution (CVPR 2017)**](https://arxiv.org/pdf/1704.03915.pdf) | ❌
 | [**Image Super-Resolution Using Dense Skip Connections (ICCV 2017)**](https://openaccess.thecvf.com/content_ICCV_2017/papers/Tong_Image_Super-Resolution_Using_ICCV_2017_paper.pdf) | ❌
 | [**“Zero-Shot” Super-Resolution using Deep Internal Learning (CVPR 2018)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ✅
@@ -24,3 +24,18 @@
 | [**A Deep Journey into Super-resolution: A survey**](https://arxiv.org/pdf/1904.07523.pdf) | ❌
 | [**Deep Learning for Image Super-resolution: A Survey**](https://arxiv.org/pdf/1902.06068.pdf) | ❌
 | [**Deep Learning for Single Image Super-Resolution: A Brief Review**](https://arxiv.org/pdf/1808.03344.pdf) | ❌
+
+
+## SLowMo 
+| Reference Papers | Read |
+|---|---|
+| [**Super SloMo: High Quality Estimation of Multiple Intermediate Frames for Video Interpolation**](https://arxiv.org/pdf/1712.00080.pdf) | ❌
+| [**Learning to Extract Flawless Slow Motion from Blurry Videos (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Jin_Learning_to_Extract_Flawless_Slow_Motion_From_Blurry_Videos_CVPR_2019_paper.pdf) | ❌
+
+## Video Interpolation
+| Reference Papers | Read |
+|---|---|
+| [****](https://arxiv.org/pdf/1712.00080.pdf) | ❌
+| [**Learning to Extract Flawless Slow Motion from Blurry Videos (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Jin_Learning_to_Extract_Flawless_Slow_Motion_From_Blurry_Videos_CVPR_2019_paper.pdf) | ❌
+
+
