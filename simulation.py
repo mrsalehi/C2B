@@ -9,6 +9,30 @@ from time import time
 S = 5
 
 
+def multiplex_v3(subframes: torch.Tensor, W: torch.Tensor):
+    """
+    subframes: intensities of subframes of a frame as a numpy array with shape (H, W, S)
+    W: numpy array with shape (nbhd_height, nbhd_width, S)
+    nbhd_size: tuple of width and height of the neighborhood (For now W must be divisible by the width of the nbhd 
+    and H must be divisible by the height of the neighborhood)
+    """
+    height, width = subframes.shape[0], subframes.shape[1]
+    # c2b_frame_bucket0 = torch.zeros(height, width).cuda()
+    # c2b_frame_bucket1 = torch.zeros(height, width).cuda()
+    
+    nbhd_height, nbhd_width = W.shape[0], W.shape[1]
+
+    assert height % nbhd_height == 0
+    assert width % nbhd_width == 0
+
+    W_ = torch.tile(W, (height // nbhd_height, width // nbhd_width))
+
+    c2b_frame_bucket0 = torch.sum(subframes * W_, dim=2)  # shape: (H, W)
+    c2b_frame_bucket1 = torch.sum(subframes * (1 - W_), dim=2)  # shape: (H, W)
+
+    return c2b_frame_bucket0, c2b_frame_bucket1
+
+
 def multiplex_v2(subframes: torch.Tensor, W: torch.Tensor, nbhds_rows: torch.Tensor, \
     nbhds_cols: torch.Tensor):
     """
@@ -76,6 +100,7 @@ def multiplex(subframes: torch.Tensor, W: torch.Tensor, nbhds: List[List[tuple]]
 
     return c2b_frame_bucket0, c2b_frame_bucket1
 
+
 def demultiplex():
     pass
 
@@ -99,24 +124,31 @@ def demultiplex():
 
 
 if __name__ == '__main__':
-    W = torch.FloatTensor([[1, 1, 0, 0, 0], [1, 0, 1, 0, 0], [1, 0, 0, 1, 0], [1, 0, 0, 0, 1]]).cuda()
-    path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
-    subframes = load_video(path)
-    print('Video loaded!')
+    DEBUG = 1
+    
+    W = torch.FloatTensor([[[1, 1, 0], [1, 1, 1]], [[0 ,0, 0], [1, 0, 1]]]).cuda()
+    
+    if DEBUG:
+        subframes = torch.FloatTensor([[[1, 1, 1], [1, 0, 0]], [[0 ,0, 0], [0, 0, 1]]]).cuda()
+    else:
+        path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
+        subframes = load_video(path)
+        print('Video loaded!')
+        subframes = torch.FloatTensor(subframes).cuda()
+        subframes = subframes[:S]  # picking the first S subframes
 
-    subframes = torch.FloatTensor(subframes).cuda()
-
-    subframes = subframes[:S]  # picking the first S subframes
     height, width = subframes.shape[1], subframes.shape[2]
 
-    nbhds = [[(2*i, 2*j), (2*i, 2*j+1), (2*i+1, 2*j), (2*i+1, 2*j+1)] \
-        for i in range(int(height / 2)) for j in range(int(width / 2))]
+    # nbhds = [[(2*i, 2*j), (2*i, 2*j+1), (2*i+1, 2*j), (2*i+1, 2*j+1)] \
+    # for i in range(int(height / 2)) for j in range(int(width / 2))]
 
-    nbhds_rows = torch.LongTensor([[el[0] for el in nbhd] for nbhd in nbhds]).cuda()
-    nbhds_cols = torch.LongTensor([[el[1] for el in nbhd] for nbhd in nbhds]).cuda()
+#    nbhds_rows = torch.LongTensor([[el[0] for el in nbhd] for nbhd in nbhds]).cuda()
+#    nbhds_cols = torch.LongTensor([[el[1] for el in nbhd] for nbhd in nbhds]).cuda()
 
     start = time()
-    c2b_frame_bucket0, c2b_frame_bucket1 = multiplex_v2(subframes, W, nbhds_rows, nbhds_cols)
+    c2b_frame_bucket0, c2b_frame_bucket1 = multiplex_v3(subframes, W)
     end = time()
 
     print(f'Simulation took {end - start} seconds')
+    print(c2b_frame_bucket0)
+    print(c2b_frame_bucket1)
