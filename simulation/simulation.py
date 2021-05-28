@@ -17,6 +17,7 @@ def multiplex_v3(subframes: torch.Tensor, W: torch.Tensor):
     and H must be divisible by the height of the neighborhood)
     """
     height, width = subframes.shape[0], subframes.shape[1]
+    print(height, width)
     # c2b_frame_bucket0 = torch.zeros(height, width).cuda()
     # c2b_frame_bucket1 = torch.zeros(height, width).cuda()
     
@@ -25,7 +26,7 @@ def multiplex_v3(subframes: torch.Tensor, W: torch.Tensor):
     assert height % nbhd_height == 0
     assert width % nbhd_width == 0
 
-    W_ = torch.tile(W, (height // nbhd_height, width // nbhd_width))
+    W_ = torch.tile(W, (height // nbhd_height, width // nbhd_width, 1))
 
     c2b_frame_bucket0 = torch.sum(subframes * W_, dim=2)  # shape: (H, W)
     c2b_frame_bucket1 = torch.sum(subframes * (1 - W_), dim=2)  # shape: (H, W)
