@@ -2,11 +2,13 @@
 ## Super Resolution
 | Reference Papers | Read |
 |---|---|
+| [**Learning a Deep Convolutional Network for Image Super-Resolution (ECCV 2014)**](https://link.springer.com/content/pdf/10.1007/978-3-319-10593-2_13.pdf) | ❌
 | [**Single Image Super-resolution from Transformed Self-Exemplars (CVPR 2015)**](https://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Huang_Single_Image_Super-Resolution_2015_CVPR_paper.pdf) | ✅
 | [**Accurate Image Super-Resolution Using Very Deep Convolutional Networks (CVPR 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ✅
 | [**Accelerating the Super-Resolution Convolutional Neural Network (ECCV 2016)**](https://arxiv.org/pdf/1511.04587.pdf) | ✅
 | [**Enhanced Deep Residual Networks for Single Image Super-Resolution (CVPR 2017 workshop)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ✅
 | [**Deep Laplacian Pyramid Networks for Fast and Accurate Super-Resolution (CVPR 2017)**](https://arxiv.org/pdf/1704.03915.pdf) | ❌
+| [**Photo-Realistic Single Image Super-Resolution Using a Generative Adversarial Network (CVPR 2017)**](https://arxiv.org/pdf/1609.04802.pdf) | ❌
 | [**Image Super-Resolution Using Dense Skip Connections (ICCV 2017)**](https://openaccess.thecvf.com/content_ICCV_2017/papers/Tong_Image_Super-Resolution_Using_ICCV_2017_paper.pdf) | ❌
 | [**“Zero-Shot” Super-Resolution using Deep Internal Learning (CVPR 2018)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ✅
 | [**Deep Back-Projection Networks For Super-Resolution (CVPR 2018)**](https://openaccess.thecvf.com/content_cvpr_2018/papers/Haris_Deep_Back-Projection_Networks_CVPR_2018_paper.pdf) | ❌
@@ -17,8 +19,10 @@
 | [**InGAN: Capturing and Remapping the "DNA" of a Natural Image (ICCV 2019)**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ✅
 | [**Across Scales & Across Dimensions: Temporal Super-Resolution using Deep Internal Learning**](https://kevinmusgrave.github.io/pytorch-metric-learning/distances/#lpdistance) | ❌
 | [**ESRGAN: Enhanced Super-Resolution Generative Adversarial Networks(ECCV 2018 Workshop)**](https://openaccess.thecvf.com/content_ECCVW_2018/papers/11133/Wang_ESRGAN_Enhanced_Super-Resolution_Generative_Adversarial_Networks_ECCVW_2018_paper.pdf) | ❌
+| [**Fast and Efficient Image Quality Enhancement via Desubpixel Convolutional Neural Networks (ECCV 2018 Workshop)**](https://openaccess.thecvf.com/content_ECCVW_2018/papers/11133/Vu_Fast_and_Efficient_Image_Quality_Enhancement_via_Desubpixel_Convolutional_Neural_ECCVW_2018_paper.pdf) | ❌
 | [**Feedback Network for Image Super-Resolution (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Li_Feedback_Network_for_Image_Super-Resolution_CVPR_2019_paper.pdf) | ❌
 | [**Second-order Attention Network for Single Image Super-Resolution (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Dai_Second-Order_Attention_Network_for_Single_Image_Super-Resolution_CVPR_2019_paper.pdf) | ❌
+| [**Meta-SR: A Magnification-Arbitrary Network for Super-Resolution (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Hu_Meta-SR_A_Magnification-Arbitrary_Network_for_Super-Resolution_CVPR_2019_paper.pdf) | ❌
 | [**Deep Unfolding Network for Image Super-Resolution**](https://openaccess.thecvf.com/content_CVPR_2020/papers/Zhang_Deep_Unfolding_Network_for_Image_Super-Resolution_CVPR_2020_paper.pdf) | ❌
 | [**Image Super-Resolution via Iterative Refinement**](https://arxiv.org/pdf/2104.07636v1.pdf) | ✅
 | [**A Deep Journey into Super-resolution: A survey**](https://arxiv.org/pdf/1904.07523.pdf) | ❌
@@ -32,10 +36,26 @@
 | [**Super SloMo: High Quality Estimation of Multiple Intermediate Frames for Video Interpolation**](https://arxiv.org/pdf/1712.00080.pdf) | ❌
 | [**Learning to Extract Flawless Slow Motion from Blurry Videos (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Jin_Learning_to_Extract_Flawless_Slow_Motion_From_Blurry_Videos_CVPR_2019_paper.pdf) | ❌
 
+## Video Super-resolution
+| Reference Papers | Read |
+|---|---|
+| [**Real-Time Video Super-Resolution with Spatio-Temporal Networks and Motion Compensation (CVPR 2017)**](https://arxiv.org/pdf/1611.05250.pdf) | ❌
+| [**Detail-revealing Deep Video Super-resolution (ICCV 2017)**](https://arxiv.org/pdf/1704.02738.pdf) | ❌
+
+
 ## Video Interpolation
 | Reference Papers | Read |
 |---|---|
-| [****](https://arxiv.org/pdf/1712.00080.pdf) | ❌
 | [**Learning to Extract Flawless Slow Motion from Blurry Videos (CVPR 2019)**](https://openaccess.thecvf.com/content_CVPR_2019/papers/Jin_Learning_to_Extract_Flawless_Slow_Motion_From_Blurry_Videos_CVPR_2019_paper.pdf) | ❌
 
+
+
+
+A great repo that contains a huge list of SR papers: https://github.com/ptkin/Awesome-Super-Resolution
+
+
+## Other Relevant Papers
+| Reference Papers | Read |
+|---|---|
+| [**To learn image superresolution, use a gan to learn how to do image degradation first (ECCV 2018)**](https://arxiv.org/pdf/1807.11458.pdf) | ❌
 
