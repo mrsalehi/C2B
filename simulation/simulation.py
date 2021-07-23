@@ -6,7 +6,78 @@ from utils import load_video
 from time import time
 
 
-S = 5
+def get_simple_scheme(nbhd_height, nbhd_width):
+    """
+    For now we assume a simple scheme in which from each subframe only one pixel is sampled 
+    and appear in the output C2B frame.
+    """
+    scheme = torch.eye(nbhd_height * nbhd_width)
+    return scheme.view(nbhd_height * nbhd_width, nbhd_height, nbhd_width)
+
+
+def multiplex_v5(subframes: torch.Tensor, nbhd_size: tuple):
+    """
+    We assume that the number of subframes is one more than the number of pixles in the neighborhood.
+    
+    subframes: intensities of subframes of a frame as a numpy array with shape (S, H, W)
+    W: numpy array with shape (S, nbhd_height, nbhd_width)
+    nbhd_size: tuple of width and height of the neighborhood (For now W must be divisible by the width of the nbhd 
+    and H must be divisible by the height of the neighborhood)
+    """
+    S, height, width = subframes.shape
+    
+    nbhd_height, nbhd_width = nbhd_size
+    n_pixels = nbhd_height * nbhd_width
+
+    assert height % nbhd_height == 0
+    assert width % nbhd_width == 0
+    assert S == nbhd_height * nbhd_width
+    
+    scheme = get_simple_scheme(nbhd_height, nbhd_width)
+    scheme_ = torch.tile(scheme, (height // nbhd_height, width // nbhd_width)).to(subframes.device)
+    
+    c2b_frame_bucket0 = torch.sum(subframes * scheme_, dim=0)
+    c2b_frame_bucket1 = torch.sum(subframes * (1 - scheme_), dim=0)
+
+    return c2b_frame_bucket0, c2b_frame_bucket1
+
+
+def multiplex_v4(subframes: torch.Tensor, W: torch.Tensor):
+    """
+    We assume that the number of subframes is one more than the number of pixles in the neighborhood.
+    
+    subframes: intensities of subframes of a frame as a numpy array with shape (S, H, W)
+    W: numpy array with shape (S, nbhd_height, nbhd_width)
+    nbhd_size: tuple of width and height of the neighborhood (For now W must be divisible by the width of the nbhd 
+    and H must be divisible by the height of the neighborhood)
+    """
+    height, width = subframes.shape[0], subframes.shape[1]
+    
+    nbhd_height, nbhd_width = W.shape[0], W.shape[1]
+    n_pixels = nbhd_height * nbhd_width
+
+    assert height % nbhd_height == 0
+    assert width % nbhd_width == 0
+    assert S - 1 == nbhd_height * nbhd_width
+
+    
+    subframes_tiled = subframes.view(-1, nbhd_height, width)
+    subframes_tiled = subframes_tiled.contiguous().permute(0, 2, 1).view(-1, nbhd_height, nbhd_width).permute(0, 2, 1)
+    
+    depth = subframes_tiled.shape[0]
+    height_sample_indices = torch.randint(nbhd_height, size=(depth,))
+    width_sample_indices = torch.randint(nbhd_width, size=(depth,))
+    
+    subframes_sampled = subframes_tiled[torch.arange(depth), height_sample_indices, width_sample_indices]
+    subframes_sampled = subframes_sampled.unsqueeze(1).repeat(n_pixels).view(-1, nbhd_height, nbhd_width)
+    
+    
+    W_ = torch.tile(W, (height // nbhd_height, width // nbhd_width, 1))
+
+    c2b_frame_bucket0 = torch.sum(subframes_sampled * W_, dim=2)  # shape: (H, W)
+    c2b_frame_bucket1 = torch.sum(subframes_sampled * (1 - W_), dim=2)  # shape: (H, W)
+
+    return c2b_frame_bucket0, c2b_frame_bucket1
 
 
 def multiplex_v3(subframes: torch.Tensor, W: torch.Tensor):
@@ -17,9 +88,6 @@ def multiplex_v3(subframes: torch.Tensor, W: torch.Tensor):
     and H must be divisible by the height of the neighborhood)
     """
     height, width = subframes.shape[0], subframes.shape[1]
-    print(height, width)
-    # c2b_frame_bucket0 = torch.zeros(height, width).cuda()
-    # c2b_frame_bucket1 = torch.zeros(height, width).cuda()
     
     nbhd_height, nbhd_width = W.shape[0], W.shape[1]
 
@@ -102,8 +170,8 @@ def multiplex(subframes: torch.Tensor, W: torch.Tensor, nbhds: List[List[tuple]]
     return c2b_frame_bucket0, c2b_frame_bucket1
 
 
-def demultiplex():
-    pass
+def demultiplex_v4(subframes: torch.Tensor, W: torch.Tensor):
+    pass       
 
 # def get_bucket_measurements(input: np.ndarray):
 #     if input.ndim  == 3:
@@ -127,10 +195,12 @@ def demultiplex():
 if __name__ == '__main__':
     DEBUG = 1
     
-    W = torch.FloatTensor([[[1, 1, 0], [1, 1, 1]], [[0 ,0, 0], [1, 0, 1]]]).cuda()
+    # W = torch.FloatTensor([[[1, 1, 0], [1, 1, 1]], [[0 ,0, 0], [1, 0, 1]]]).cuda()
     
     if DEBUG:
-        subframes = torch.FloatTensor([[[1, 1, 1], [1, 0, 0]], [[0 ,0, 0], [0, 0, 1]]]).cuda()
+        # subframes = torch.FloatTensor([[[1, 1, 1], [1, 0, 0]], [[0 ,0, 0], [0, 0, 1]]]).cuda()
+        sf = torch.FloatTensor([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]])
+        subframes = torch.stack([sf, -sf, sf - 100, sf - 1000], dim=0).cuda() 
     else:
         path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
         subframes = load_video(path)
@@ -147,7 +217,8 @@ if __name__ == '__main__':
 #    nbhds_cols = torch.LongTensor([[el[1] for el in nbhd] for nbhd in nbhds]).cuda()
 
     start = time()
-    c2b_frame_bucket0, c2b_frame_bucket1 = multiplex_v3(subframes, W)
+    # c2b_frame_bucket0, c2b_frame_bucket1 = multiplex_v3(subframes, W)
+    c2b_frame_bucket0, c2b_frame_bucket1 = multiplex_v5(subframes, (2, 2))
     end = time()
 
     print(f'Simulation took {end - start} seconds')

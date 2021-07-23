@@ -30,5 +30,7 @@ def load_video(video_path):
     return np.stack(frames)
 
 
-path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
-subframes = load_video(path)
+
+if __name__ == "__main__":
+    path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
+    subframes = load_video(path)
