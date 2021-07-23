@@ -6,18 +6,15 @@ from utils import load_video
 from time import time
 
 
+
 def get_simple_scheme(nbhd_height, nbhd_width):
-    """
-    For now we assume a simple scheme in which from each subframe only one pixel is sampled 
-    and appear in the output C2B frame.
-    """
     scheme = torch.eye(nbhd_height * nbhd_width)
     return scheme.view(nbhd_height * nbhd_width, nbhd_height, nbhd_width)
 
 
 def multiplex_v5(subframes: torch.Tensor, nbhd_size: tuple):
     """
-    We assume that the number of subframes is one more than the number of pixles in the neighborhood.
+    We assume that the number of subframes is divisible by the number of pixles in a neighborhood.
     
     subframes: intensities of subframes of a frame as a numpy array with shape (S, H, W)
     W: numpy array with shape (S, nbhd_height, nbhd_width)
@@ -31,10 +28,12 @@ def multiplex_v5(subframes: torch.Tensor, nbhd_size: tuple):
 
     assert height % nbhd_height == 0
     assert width % nbhd_width == 0
-    assert S == nbhd_height * nbhd_width
+    assert S % n_pixels == 0
     
-    scheme = get_simple_scheme(nbhd_height, nbhd_width)
-    scheme_ = torch.tile(scheme, (height // nbhd_height, width // nbhd_width)).to(subframes.device)
+    scheme = get_simple_scheme(nbhd_height, nbhd_width)  # shape: (n_pixels, nbhd_height, nbhd_width)
+    scheme_ = torch.tile(scheme, (height // nbhd_height, width // nbhd_width)).to(subframes.device) # shape: (n_pixels, height, width)
+    scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)  # shape: (S, height, width)
+    print(scheme_)
     
     c2b_frame_bucket0 = torch.sum(subframes * scheme_, dim=0)
     c2b_frame_bucket1 = torch.sum(subframes * (1 - scheme_), dim=0)
@@ -200,7 +199,7 @@ if __name__ == '__main__':
     if DEBUG:
         # subframes = torch.FloatTensor([[[1, 1, 1], [1, 0, 0]], [[0 ,0, 0], [0, 0, 1]]]).cuda()
         sf = torch.FloatTensor([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15 ,16]])
-        subframes = torch.stack([sf, -sf, sf - 100, sf - 1000], dim=0).cuda() 
+        subframes = torch.stack([sf, -sf, sf - 100, sf - 200, sf - 300, sf - 400, sf - 500, sf - 600], dim=0).cuda() 
     else:
         path = '/scratch/ondemand23/mrsalehi/original_high_fps_videos/720p_240fps_1.mov'
         subframes = load_video(path)
