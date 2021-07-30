@@ -5,6 +5,10 @@ from typing import List
 from utils import load_video
 from time import time
 from tqdm import tqdm
+from imageio import imwrite
+import os
+import cv2
+import numpy as np
 
 
 class C2BCamera:
@@ -13,6 +17,7 @@ class C2BCamera:
         self.nbhd_height, self.nbhd_width = config.camera.nbhd_size
         n_pixels = self.nbhd_height * self.nbhd_width
         self.S = config.camera.S
+        self.max_intensity = torch.tensor(2 ** config.camera.pixel_bit_depth)
         
         assert self.frame_height % self.nbhd_height == 0
         assert self.frame_width % self.nbhd_width == 0
@@ -25,6 +30,16 @@ class C2BCamera:
         scheme_ = torch.tile(self.scheme, (self.frame_height // self.nbhd_height, 
                                                 self.frame_width // self.nbhd_width)).to(self.device) # shape: (n_pixels, height, width)
         self.scheme_ = scheme_.unsqueeze(1).repeat(1, self.S // n_pixels, 1, 1).view(self.S, self.frame_height, self.frame_width)  # shape: (S, height, width)
+        self.save_output = config.camera.save_output
+        self.save_dir = config.camera.save_dir
+        if self.save_output:
+            os.makedirs(self.save_dir, exist_ok=True)
+        
+    def save_frame(self, frame, frame_num):
+        for i in range(2):
+            bucket_normalized = ((frame[i] / self.max_intensity) * 255.).to(torch.uint8)
+            bucket_i_image = bucket_normalized.permute(1, 2, 0).detach().cpu().numpy()
+            imwrite(os.path.join(self.save_dir, f'{frame_num}_b{i}.jpg'), bucket_i_image)
 
     def multiplex(self, subframes: torch.Tensor):
         """
@@ -43,9 +58,8 @@ class C2BCamera:
         
         # scheme_ = torch.tile(self.scheme, (height // self.nbhd_height, width // self.nbhd_width)).to(raw_subframes.device) # shape: (n_pixels, height, width)
         # scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)  # shape: (S, height, width)
-        
-        c2b_frame_bucket0 = torch.sum(subframes * self.scheme_, dim=0)
-        c2b_frame_bucket1 = torch.sum(subframes * (1 - self.scheme_), dim=0)
+        c2b_frame_bucket0 = torch.minimum(torch.sum(subframes * self.scheme_, dim=0), self.max_intensity)
+        c2b_frame_bucket1 = torch.minimum(torch.sum(subframes * (1 - self.scheme_), dim=0), self.max_intensity)
 
         return c2b_frame_bucket0, c2b_frame_bucket1
 
@@ -60,13 +74,18 @@ class C2BCamera:
         for multi_chnl_subframes in self.subframe_gen(self.S):
             i += 1
             bucket_0_chnls, bucket_1_chnls = [], []
-            for chnl in range(multi_chnl_subframes.size(1)):    
+            for chnl in range(multi_chnl_subframes.size(1)): # Do the simulation for each one of the color channels separtately
                 bucket_0, bucket_1 = self.multiplex(multi_chnl_subframes[:, chnl, ...])
                 bucket_0_chnls.append(bucket_0)
                 bucket_1_chnls.append(bucket_1)
             
             bucket_0, bucket_1 = torch.stack(bucket_0_chnls), torch.stack(bucket_1_chnls)
-            c2b_frames.append((bucket_0, bucket_1))
+            frame = (bucket_0, bucket_1)
+            c2b_frames.append(frame)
+            
+            if self.save_output:
+                self.save_frame(frame, i)
+                
             print(f'Processed C2B Frame {i}.')
     
         return c2b_frames

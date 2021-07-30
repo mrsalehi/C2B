@@ -3,6 +3,7 @@ camera:
   S: 8
   frame_height: 720
   frame_width: 1280
+  pixel_bit_depth: 12
   nbhd_size:
   - 2  # nbhd_height
   - 2  # nbhd_width
@@ -23,6 +24,8 @@ camera:
     - 0
     - 0
     - 1
+  save_output: true
+  save_dir: result/
 
 data:
   type: 'img_seq'  # 'img_seq' or 'video' or 'img'
