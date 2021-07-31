@@ -5,18 +5,6 @@ from functools import partial
 from utils import img_seq_gen, video_gen
 
 
-# Things to be added:
-
-
-# 1. Voltage threshold
-
-
-
-# 2. Support for loading a video file and 
-
-
-# 3. Support for predicting the slope of the charging line
-
 def main(args, config):
     if config.data.type == 'img_seq':
         gen_fun = partial(img_seq_gen, config.data.path, config.data.extension)

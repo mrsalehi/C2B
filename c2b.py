@@ -37,10 +37,14 @@ class C2BCamera:
         self.scheme_ = scheme_.unsqueeze(1).repeat(1, self.S // n_pixels, 1, 1).view(self.S, self.frame_height, self.frame_width)  # shape: (S, height, width)
         self.save_output = config.camera.save_output
         self.save_dir = config.camera.save_dir
+        
+        self.noise_std = None
+        if config.camera.add_noise:
+            self.noise_std = config.camera.noise_std
+        
         if self.save_output:
             os.makedirs(self.save_dir, exist_ok=True)
-    
-    
+        
     def save_frame(self, frame, frame_num):
         for i in range(2):
             bucket_normalized = ((frame[i] / self.max_intensity) * 255.).to(torch.uint8)
@@ -68,6 +72,10 @@ class C2BCamera:
         c2b_frame_bucket0 = torch.minimum(torch.sum(subframes * self.scheme_, dim=0), self.max_intensity)
         c2b_frame_bucket1 = torch.minimum(torch.sum(subframes * (1 - self.scheme_), dim=0), self.max_intensity)
 
+        if self.noise_std is not None:
+            c2b_frame_bucket0 += torch.randn_like(c2b_frame_bucket0) * self.noise_std
+            c2b_frame_bucket1 += torch.randn_like(c2b_frame_bucket1) * self.noise_std
+        
         return c2b_frame_bucket0, c2b_frame_bucket1
 
 

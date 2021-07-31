@@ -4,6 +4,8 @@ camera:
   frame_height: 720
   frame_width: 1280
   pixel_bit_depth: 12
+  add_noise: true
+  noise_std: 1
   nbhd_size:
   - 2  # nbhd_height
   - 2  # nbhd_width
