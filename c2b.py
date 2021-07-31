@@ -6,6 +6,7 @@ from utils import load_video
 from time import time
 from tqdm import tqdm
 from imageio import imwrite
+from utils import get_simple_scheme
 import os
 import cv2
 import numpy as np
@@ -26,7 +27,11 @@ class C2BCamera:
         self.device = args.device
         self.subframe_gen = subframe_gen
         
-        self.scheme = torch.FloatTensor(config.camera.scheme)
+        # self.scheme = torch.FloatTensor(config.camera.scheme)
+        self.scheme = get_simple_scheme(self.nbhd_height, self.nbhd_width)
+        # scheme = torch.tile(self.scheme, (height // self.nbhd_height, width // self.nbhd_width)).to(raw_subframes.device)
+        # scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)
+        
         scheme_ = torch.tile(self.scheme, (self.frame_height // self.nbhd_height, 
                                                 self.frame_width // self.nbhd_width)).to(self.device) # shape: (n_pixels, height, width)
         self.scheme_ = scheme_.unsqueeze(1).repeat(1, self.S // n_pixels, 1, 1).view(self.S, self.frame_height, self.frame_width)  # shape: (S, height, width)
@@ -34,7 +39,8 @@ class C2BCamera:
         self.save_dir = config.camera.save_dir
         if self.save_output:
             os.makedirs(self.save_dir, exist_ok=True)
-        
+    
+    
     def save_frame(self, frame, frame_num):
         for i in range(2):
             bucket_normalized = ((frame[i] / self.max_intensity) * 255.).to(torch.uint8)
@@ -55,9 +61,10 @@ class C2BCamera:
         and H must be divisible by the height of the neighborhood)
         """
         # S, height, width = raw_subframes.shape
-        
+
         # scheme_ = torch.tile(self.scheme, (height // self.nbhd_height, width // self.nbhd_width)).to(raw_subframes.device) # shape: (n_pixels, height, width)
         # scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)  # shape: (S, height, width)
+        
         c2b_frame_bucket0 = torch.minimum(torch.sum(subframes * self.scheme_, dim=0), self.max_intensity)
         c2b_frame_bucket1 = torch.minimum(torch.sum(subframes * (1 - self.scheme_), dim=0), self.max_intensity)
 

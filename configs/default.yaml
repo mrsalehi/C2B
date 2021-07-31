@@ -1,5 +1,5 @@
 camera:
-  voltage-threshold: 0.5
+  voltage_threshold: 0.5
   S: 8
   frame_height: 720
   frame_width: 1280
@@ -8,22 +8,38 @@ camera:
   - 2  # nbhd_height
   - 2  # nbhd_width
   scheme:  # A matrix (saved as a list) with the shape of (S, nbhd_height, nbhd_width) 
-  - - 0
-    - 1
-    - 1
-    - 0
-  - - 1
-    - 0
-    - 0
-    - 0
-  - - 1
-    - 1
-    - 1
-    - 1
-  - - 0
-    - 0
-    - 0
-    - 1
+  - - - 1
+      - 0
+    - - 0
+      - 0
+  - - - 1
+      - 0
+    - - 0
+      - 0
+  - - - 0
+      - 1
+    - - 0
+      - 0
+  - - - 0
+      - 1
+    - - 0
+      - 0
+  - - - 0
+      - 0
+    - - 1
+      - 0
+  - - - 0
+      - 0
+    - - 1
+      - 0
+  - - - 0
+      - 0
+    - - 0
+      - 1
+  - - - 0
+      - 0
+    - - 0
+      - 1 
   save_output: true
   save_dir: result/
 

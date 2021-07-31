@@ -21,8 +21,8 @@ def video_gen(video_path, S):
         yield frame['data']
 
 
-def get_simple_scheme():
-    scheme = torch.eye(nbhd_height * nbhd_width)
+def get_simple_scheme(nbhd_height, nbhd_width):
+    scheme = torch.eye(nbhd_height * nbhd_width).float()
     return scheme.view(nbhd_height * nbhd_width, nbhd_height, nbhd_width)
 
 
