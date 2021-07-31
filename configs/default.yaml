@@ -49,3 +49,4 @@ data:
   type: 'img_seq'  # 'img_seq' or 'video' or 'img'
   path: 'videos/airboard_1/airboard_1/240/airboard_1'
   extension: 'jpg'
+  batch_size: 2

@@ -18,17 +18,17 @@ class C2BCamera:
         self.nbhd_height, self.nbhd_width = config.camera.nbhd_size
         n_pixels = self.nbhd_height * self.nbhd_width
         self.S = config.camera.S
+        self.device = args.device
         self.max_intensity = torch.tensor(2 ** config.camera.pixel_bit_depth)
         
         assert self.frame_height % self.nbhd_height == 0
         assert self.frame_width % self.nbhd_width == 0
         assert self.S % n_pixels == 0
         
-        self.device = args.device
         self.subframe_gen = subframe_gen
         
         # self.scheme = torch.FloatTensor(config.camera.scheme)
-        self.scheme = get_simple_scheme(self.nbhd_height, self.nbhd_width)
+        self.scheme = get_simple_scheme(self.nbhd_height, self.nbhd_width).to(self.device)
         # scheme = torch.tile(self.scheme, (height // self.nbhd_height, width // self.nbhd_width)).to(raw_subframes.device)
         # scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)
         
@@ -37,6 +37,7 @@ class C2BCamera:
         self.scheme_ = scheme_.unsqueeze(1).repeat(1, self.S // n_pixels, 1, 1).view(self.S, self.frame_height, self.frame_width)  # shape: (S, height, width)
         self.save_output = config.camera.save_output
         self.save_dir = config.camera.save_dir
+        self.batch_size = config.data.batch_size
         
         self.noise_std = None
         if config.camera.add_noise:
@@ -48,7 +49,7 @@ class C2BCamera:
     def save_frame(self, frame, frame_num):
         for i in range(2):
             bucket_normalized = ((frame[i] / self.max_intensity) * 255.).to(torch.uint8)
-            bucket_i_image = bucket_normalized.permute(1, 2, 0).detach().cpu().numpy()
+            bucket_i_image = bucket_normalized.permute(1, 2, 0).cpu().numpy()
             imwrite(os.path.join(self.save_dir, f'{frame_num}_b{i}.jpg'), bucket_i_image)
 
     def multiplex(self, subframes: torch.Tensor):
@@ -69,8 +70,8 @@ class C2BCamera:
         # scheme_ = torch.tile(self.scheme, (height // self.nbhd_height, width // self.nbhd_width)).to(raw_subframes.device) # shape: (n_pixels, height, width)
         # scheme_ = scheme_.unsqueeze(1).repeat(1, S // n_pixels, 1, 1).view(S, height, width)  # shape: (S, height, width)
         
-        c2b_frame_bucket0 = torch.minimum(torch.sum(subframes * self.scheme_, dim=0), self.max_intensity)
-        c2b_frame_bucket1 = torch.minimum(torch.sum(subframes * (1 - self.scheme_), dim=0), self.max_intensity)
+        c2b_frame_bucket0 = torch.minimum(torch.sum(subframes * self.scheme_.unsqueeze(1), dim=1), self.max_intensity.to(self.device))
+        c2b_frame_bucket1 = torch.minimum(torch.sum(subframes * (1 - self.scheme_.unsqueeze(1)), dim=1), self.max_intensity.to(self.device))
 
         if self.noise_std is not None:
             c2b_frame_bucket0 += torch.randn_like(c2b_frame_bucket0) * self.noise_std
@@ -85,23 +86,36 @@ class C2BCamera:
         temporal resolution camera.
         """
         c2b_frames = []
-        i = 0
-        for multi_chnl_subframes in self.subframe_gen(self.S):
-            i += 1
-            bucket_0_chnls, bucket_1_chnls = [], []
-            for chnl in range(multi_chnl_subframes.size(1)): # Do the simulation for each one of the color channels separtately
-                bucket_0, bucket_1 = self.multiplex(multi_chnl_subframes[:, chnl, ...])
-                bucket_0_chnls.append(bucket_0)
-                bucket_1_chnls.append(bucket_1)
-            
-            bucket_0, bucket_1 = torch.stack(bucket_0_chnls), torch.stack(bucket_1_chnls)
-            frame = (bucket_0, bucket_1)
-            c2b_frames.append(frame)
-            
-            if self.save_output:
-                self.save_frame(frame, i)
+        frame_idx = 0
+        with torch.no_grad():
+            for sf_batch in self.subframe_gen(self.S, self.batch_size):
+                bucket_0, bucket_1 = self.multiplex(sf_batch.to(self.device))
                 
-            print(f'Processed C2B Frame {i}.')
+                for i in range(self.batch_size):
+                    frame = (bucket_0[i].cpu(), bucket_1[i].cpu())
+                    frame_idx += 1
+                    c2b_frames.append(frame)
+                    if self.save_output:
+                        self.save_frame(frame, i)
+        
+                print(f'Processed C2B Frame {frame_idx}.')
+                
+            # for multi_chnl_subframes in self.subframe_gen(self.S):
+            #     i += 1
+            #     bucket_0_chnls, bucket_1_chnls = [], []
+            #     for chnl in range(multi_chnl_subframes.size(1)): # Do the simulation for each one of the color channels separtately
+            #         bucket_0, bucket_1 = self.multiplex(multi_chnl_subframes[:, chnl, ...].to(self.device))
+            #         bucket_0_chnls.append(bucket_0)
+            #         bucket_1_chnls.append(bucket_1)
+                
+            #     bucket_0, bucket_1 = torch.stack(bucket_0_chnls), torch.stack(bucket_1_chnls)
+            #     frame = (bucket_0.cpu(), bucket_1.cpu())
+            #     c2b_frames.append(frame)
+                
+            #     if self.save_output:
+            #         self.save_frame(frame, i)
+                    
+            #     print(f'Processed C2B Frame {i}.')
     
         return c2b_frames
 

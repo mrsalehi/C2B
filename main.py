@@ -3,7 +3,7 @@ import argparse
 import yaml
 from functools import partial
 from utils import img_seq_gen, video_gen
-
+import time
 
 def main(args, config):
     if config.data.type == 'img_seq':
@@ -12,8 +12,10 @@ def main(args, config):
         gen_fun = partial(video_gen, config.data.path)
         
     c2b = C2BCamera(args, config, gen_fun)
+    start = time.time()
     c2b.get_c2b_frames_from_preexisting_frames()
-
+    end = time.time()
+    print(f'Simulation took {end - start} seconds.')
 
 def get_args_config():
     parser = argparse.ArgumentParser(description='C2B Camera Simulation')    

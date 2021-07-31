@@ -7,12 +7,14 @@ from tqdm import tqdm
 import torch
 
 
-def img_seq_gen(root, extension, S):
+def img_seq_gen(root, extension, S, batch_size):
     files = sorted(glob.glob(f'{root}/*.{extension}'))
     
-    for i in range(0, len(files), S):
-        imgs = torch.stack([read_image(file) for file in files[i:i+S]])
-        yield imgs
+    for i in range(0, len(files), S * batch_size):
+        imgs = torch.stack([read_image(file) for file in files[i:i+S*batch_size]])
+        if len(imgs) % S != 0:
+            break
+        yield imgs.view(len(imgs)//S, S, *imgs.shape[1:])
 
 
 def video_gen(video_path, S):
